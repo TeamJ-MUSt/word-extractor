@@ -1,5 +1,5 @@
-# lyrics-fetcher
-Python script that will search for japanese song's lyrics.
+# words-extractor
+Python script that will extract words and search definitions of a japanese text.
 
 ## Environment
 Python 3.9.12
@@ -15,10 +15,10 @@ cd lyrics-fetcher
 pip install -r requirements.txt
 python -m unidic download
 ```
-3. Run `extract_words.py` with arguments
+3. Run `extract_words.py` or `search_definitions.py` with arguments
 
 ### extract_words.py
-Running this will tokenize the given query using fugashi, a nice wrapper of Mecab. It will return a list of dictionaries, where each dictionary contains lema, speeh fields, and others.
+Running this will tokenize the given query using fugashi, a nice wrapper of Mecab. It will return a list of dictionaries, where each dictionary contains lema, speeh fields, and others. Connecting words(助詞) will be excluded.
 
 usage: `python extract_words.py [-h] [--out OUT] [--verbose] query`
 
