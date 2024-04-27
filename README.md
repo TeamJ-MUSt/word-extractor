@@ -8,7 +8,7 @@ Python 3.9.12
 1. Clone this repository
 ```
 git clone https://github.com/TeamJ-MUSt/word-extractor
-cd lyrics-fetcher
+cd word-extractor
 ```
 2. Install `requirements.txt` and [UniDic](https://github.com/polm/unidic-py?tab=readme-ov-file). Installing UniDic will take a while.
 ```
