@@ -31,14 +31,14 @@ def log(*args, **kwargs):
 
 def main():
     parser = argparse.ArgumentParser(description='Fetch lyrics from bugs')
-    parser.add_argument('query', help='Search query string, or Input file path of search queries. Whether it is a file or not is determined by the dot(.).')
+    parser.add_argument('query', help='The text to extract words from, or a file of texts. Whether it is a file or not is determined by the dot(.).')
     parser.add_argument('--out', help='Output file path. Outputs to standard output if not specified.')
     parser.add_argument('--verbose', action='store_true', help='Prints current queries and progress')
     args = parser.parse_args()
 
     if not args.query:
         if args.verbose:
-            print("Error: Please provide an query using --query")
+            print("Error: Please provide text using --query")
         return
     
     global verbose
