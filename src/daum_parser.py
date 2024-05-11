@@ -1,6 +1,7 @@
 import requests
 import time
 import random
+import re 
 
 from bs4 import BeautifulSoup
 
@@ -20,6 +21,9 @@ def __random_delay():
         min_delay = 0
     time.sleep(random.random() * (max_delay - min_delay) + min_delay)
 
+def __remove_number_prefix(input_string):
+    return re.sub(r'^\d+\.\s*', '', input_string)
+
 def get_definition_lists(keyword : str):
     __random_delay()
     url = f'https://dic.daum.net/search.do?q={keyword}&dic=jp'
@@ -36,7 +40,7 @@ def get_definition_lists(keyword : str):
             li_tags = ul.find_all('li')
             for li in li_tags:
                 content = ''.join(li.find_all(string=True, recursive=True))
-                ul_group.append(content)
+                ul_group.append(__remove_number_prefix(content))
             result.append(ul_group)
         return result
     

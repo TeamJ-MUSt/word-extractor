@@ -50,8 +50,8 @@ optional arguments:
 - `--verbose`: Prints current queries and progress. Defaults to `False`
 ```
 // Using simple query, output to file, log process
-python extract_words.py "空 何 てる" --out result.txt --verbose
+python search_definitions.py "空 何 てる" --out result.txt --verbose
 
 // Using file query, output to standard output
-python extract_words.py queries.txt
+python search_definitions.py queries.txt
 ```
