@@ -80,9 +80,11 @@ def search_definitions_and_level(driver, query, N):
                     for element in mean_elements:
                         if element.text not in definitions and contains_korean(element.text):
                             definitions.append(element.text)
-                        if len(definitions) == N:
+                        if len(definitions) >= N:
                             break
-
+                
+                if len(definitions) >= N:
+                    break
             # Calculate new scroll height and compare with last scroll height
             new_height = driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
