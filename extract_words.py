@@ -14,8 +14,14 @@ parser.set_max_delay(2)
 def get_important_tokens(text):
     tokens = tokenizer.get_tokens(text)
     important_tokens = []
+    banned_fields = ['助詞', '助動詞', '数詞']
     for token in tokens:
-        if token["speechFields"][0] == '助詞':
+        ban = False
+        for field in token['speechFields']:
+            if field in banned_fields:
+                ban = True
+                break
+        if ban:
             continue
         important_tokens.append(token)
     return important_tokens

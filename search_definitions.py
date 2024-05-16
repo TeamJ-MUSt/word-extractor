@@ -2,25 +2,23 @@ import argparse
 import json
 import os
 
-import src.daum_parser as parser
+#import src.daum_parser as parser
+import src.naver_parser as searcher
 
 verbose = False
 
-parser.set_max_delay(2)
-
-
 def get_word_definitions(words):
-    result = []
+    results = []
     for word in words:
         log(f"Querying {word}",end="")
-        definitions = parser.get_definition_lists(word)
-        if (definitions is None) or (len(definitions) == 0):
+        result = searcher.search(word, 4)
+        if (result['definitions'] is None) or (len(result['definitions']) == 0):
             log("Not found from dictionary, therefore skipping it.")
             continue
         else:
             log("Done!")
-        result.append({'word' : word, 'definitions':definitions[0]})
-    return result
+        results.append(result)
+    return results
 
 def is_file(string):
     _, file_extension = os.path.splitext(string)
@@ -61,6 +59,7 @@ def main():
             if args.verbose:
                 print("Saved results as json:", args.out)
 
+    searcher.quit()
 
 if __name__ == "__main__":
     main()
