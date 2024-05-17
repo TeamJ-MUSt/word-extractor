@@ -8,7 +8,8 @@ import time
 import re
 import os
 from subprocess import CREATE_NO_WINDOW
-
+import re
+import unicodedata
 
 
 def initialize_browser():
@@ -50,6 +51,32 @@ def contains_korean(text):
     korean_pattern = re.compile("[\u3131-\u3163\uac00-\ud7a3]+")
     return bool(korean_pattern.search(text))
 
+def has_japanese_characters(text):
+    for char in text:
+        if 'CJK UNIFIED IDEOGRAPH' in unicodedata.name(char, ''):
+            return True
+    return False
+
+def remove_specific_parentheses_content(text):
+    text = re.sub(r'\(\(', '(', text)
+    text = re.sub(r'\)\)', ')', text)
+
+    pattern = re.compile(r'\((.*?)\)')
+    matches = pattern.findall(text)
+
+    for match in matches:
+        clean_match = ''.join(match.split())
+        if len(clean_match) == 0 or len(clean_match) > 5 or has_japanese_characters(match) or not contains_korean(match):
+            text = text.replace(f'({match})', '')
+    return text.strip()
+
+def slice_until(input_string, delimiter, N):
+    parts = input_string.split(delimiter)
+    if len(parts) < N:
+        return input_string
+    result = delimiter.join(parts[:N]) + delimiter
+    
+    return result
 def search_definitions_and_level(driver, query, N):
     url = f'https://ja.dict.naver.com/#/search?range=word&query={query}'
     definitions = []
@@ -78,8 +105,16 @@ def search_definitions_and_level(driver, query, N):
                     # Find 'p.mean' within the same row if the origin is valid
                     mean_elements = row.find_elements(By.CSS_SELECTOR, "p.mean")
                     for element in mean_elements:
-                        if element.text not in definitions and contains_korean(element.text):
-                            definitions.append(element.text)
+                        if element.text in definitions:
+                            continue
+                        if not contains_korean(element.text):
+                            continue
+                        
+                        cleared_string = remove_specific_parentheses_content(element.text)
+                        cleared_string = slice_until(cleared_string, ';', 3)
+                        cleared_string = slice_until(cleared_string, ',', 3)
+
+                        definitions.append(cleared_string)
                         if len(definitions) >= N:
                             break
                 
