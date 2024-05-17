@@ -113,6 +113,7 @@ def search_definitions_and_level(driver, query, N):
                         cleared_string = remove_specific_parentheses_content(element.text)
                         cleared_string = slice_until(cleared_string, ';', 3)
                         cleared_string = slice_until(cleared_string, ',', 3)
+                        cleared_string = cleared_string.replace('\'','\\\'')
 
                         definitions.append(cleared_string)
                         if len(definitions) >= N:
@@ -129,20 +130,6 @@ def search_definitions_and_level(driver, query, N):
         print("Timed out waiting for page to load")
 
     return definitions, level
-
-def main():
-    driver = initialize_browser()
-
-    query = '遥か'
-    definitions, level = search_definitions_and_level(driver, query, 5)
-    print("Collected definitions:")
-    for definition in definitions:
-        print(definition)
-    print("Level:", level)
-    driver.quit()
-
-if __name__ == '__main__':
-    main()
 
 driver = initialize_browser()
 
