@@ -84,10 +84,11 @@ def slice_until(input_string, delimiter, N):
     result = delimiter.join(parts[:N]) + delimiter
     
     return result
-def search_definitions_and_level(driver, query, N):
+def search_definitions_and_pron_and_level(driver, query, N):
     url = f'https://ja.dict.naver.com/#/search?range=word&query={query}'
     definitions = []
     level = -1
+    pron = ""
     driver.get(url)
     try:
         last_height = driver.execute_script("return document.body.scrollHeight")
@@ -109,6 +110,8 @@ def search_definitions_and_level(driver, query, N):
                 if valid:
                     if level < 0:
                         level = find_jlpt(texts)
+                    if pron == "":
+                        pron = texts[0]
                     # Find 'p.mean' within the same row if the origin is valid
                     mean_elements = row.find_elements(By.CSS_SELECTOR, "p.mean")
                     for element in mean_elements:
@@ -138,13 +141,15 @@ def search_definitions_and_level(driver, query, N):
     except TimeoutException:
         print("Timed out waiting for page to load")
 
-    return definitions, level
+    if pron == "":
+        pron = query
+    return definitions, pron, level
 
 driver = initialize_browser()
 
 def search(word, N):
-    definitions, level = search_definitions_and_level(driver, word, N)
-    return {'word': word, 'definitions': definitions, 'level':level}
+    definitions, pron, level = search_definitions_and_pron_and_level(driver, word, N)
+    return {'word': word, 'definitions': definitions, 'pronounciation':pron, 'level':level}
 
 def quit():
     driver.quit()
