@@ -10,6 +10,7 @@ import os
 from subprocess import CREATE_NO_WINDOW
 import re
 import unicodedata
+from bs4 import BeautifulSoup
 
 
 def initialize_browser():
@@ -26,6 +27,12 @@ def initialize_browser():
 
     driver = webdriver.Chrome(service=service, options=options)
     return driver
+
+def remove_span_mark_content(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    for span in soup.find_all('span', class_='mark'):
+        span.decompose()  # Removes the tag and its content
+    return soup.get_text()
 
 def process_texts(texts):
     result = []
@@ -105,15 +112,17 @@ def search_definitions_and_level(driver, query, N):
                     # Find 'p.mean' within the same row if the origin is valid
                     mean_elements = row.find_elements(By.CSS_SELECTOR, "p.mean")
                     for element in mean_elements:
-                        if element.text in definitions:
+                        cleaned_text = remove_span_mark_content(element.get_attribute('innerHTML'))
+                        if cleaned_text in definitions:
                             continue
-                        if not contains_korean(element.text):
+                        if not contains_korean(cleaned_text):
                             continue
                         
                         cleared_string = remove_specific_parentheses_content(element.text)
                         cleared_string = slice_until(cleared_string, ';', 3)
                         cleared_string = slice_until(cleared_string, ',', 3)
                         cleared_string = cleared_string.replace('\'','\\\'')
+                        cleared_string = cleared_string.split(':')[-1].strip()
 
                         definitions.append(cleared_string)
                         if len(definitions) >= N:
