@@ -84,6 +84,14 @@ def slice_until(input_string, delimiter, N):
     result = delimiter.join(parts[:N]) + delimiter
     
     return result
+
+def is_only_hiragana(s):
+    # Define the regular expression for Hiragana characters
+    hiragana_regex = re.compile(r'^[\u3040-\u309F]+$')
+    
+    # Use the regex to check if the string matches the pattern
+    return bool(hiragana_regex.match(s))
+
 def search_definitions_and_pron_and_level(driver, query, N):
     url = f'https://ja.dict.naver.com/#/search?range=word&query={query}'
     definitions = []
@@ -111,17 +119,20 @@ def search_definitions_and_pron_and_level(driver, query, N):
                     if level < 0:
                         level = find_jlpt(texts)
                     if pron == "":
-                        pron = texts[0]
+                        for candidate_word in texts:
+                            if is_only_hiragana(candidate_word):
+                                pron = candidate_word
+                                break
                     # Find 'p.mean' within the same row if the origin is valid
                     mean_elements = row.find_elements(By.CSS_SELECTOR, "p.mean")
                     for element in mean_elements:
-                        cleaned_text = remove_span_mark_content(element.get_attribute('innerHTML'))
-                        if cleaned_text in definitions:
+                        cleared_string = remove_span_mark_content(element.get_attribute('innerHTML'))
+                        if cleared_string in definitions:
                             continue
-                        if not contains_korean(cleaned_text):
+                        if not contains_korean(cleared_string):
                             continue
                         
-                        cleared_string = remove_specific_parentheses_content(element.text)
+                        cleared_string = remove_specific_parentheses_content(cleared_string)
                         cleared_string = slice_until(cleared_string, ';', 3)
                         cleared_string = slice_until(cleared_string, ',', 3)
                         cleared_string = cleared_string.replace('\'','\\\'')

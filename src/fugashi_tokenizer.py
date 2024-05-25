@@ -12,7 +12,7 @@ def get_tokens(text :str):
         info = {}
         info["surface"] = word.surface
         info["speechFields"] = [word.feature.pos1, word.feature.pos2, word.feature.pos3, word.feature.pos4]  #speech fields
-        info["pronounciation"] = word.feature.lForm   #pronounciation of lemma, (alternative)pron: pronounciation including ー. 
+        #info["pronounciation"] = word.feature.lForm   #pronounciation of lemma, (alternative)pron: pronounciation including ー. 
         info["lemma"] = word.feature.lemma #(alternative)orth: written lemma
         #goshu: word type
         if not any(__compare_tokens(info, existing_item) for existing_item in tokens):
