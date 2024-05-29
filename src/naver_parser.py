@@ -55,14 +55,12 @@ def find_jlpt(text):
 
 def contains_korean(text):
     # Regular expression to match Korean characters
-    korean_pattern = re.compile("[\u3131-\u3163\uac00-\ud7a3]+")
+    korean_pattern = re.compile("[ㄱ-힣]+")
     return bool(korean_pattern.search(text))
 
 def has_japanese_characters(text):
-    for char in text:
-        if 'CJK UNIFIED IDEOGRAPH' in unicodedata.name(char, ''):
-            return True
-    return False
+    japanese_pattern = re.compile('[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]+')
+    return bool(japanese_pattern.search(text))
 
 def remove_specific_parentheses_content(text):
     text = re.sub(r'\(\(', '(', text)
@@ -104,7 +102,7 @@ def search_definitions_and_pron_and_level(driver, query, N):
             # Scroll down to the bottom
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             # Wait to load more items
-            time.sleep(0.5)
+            time.sleep(0.25)
             
             # Attempt to find the container rows that include the origin and definitions
             rows = driver.find_elements(By.CSS_SELECTOR, "div.row")
