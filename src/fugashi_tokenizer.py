@@ -1,13 +1,21 @@
 import fugashi
-
+import re
 
 tagger = fugashi.Tagger()
+
+def is_japanese_only(s: str) -> bool:
+    # Define the regex pattern for Japanese characters
+    pattern = r'^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FBF]+$'
+    # Check if the string matches the pattern
+    return bool(re.match(pattern, s))
 
 def get_tokens(text :str):
     words = [word for word in tagger(text)]
     tokens = []
     for word in words:
         if word.feature.lemma is None:
+            continue
+        if not is_japanese_only(word.surface):
             continue
         info = {}
         info["surface"] = word.surface

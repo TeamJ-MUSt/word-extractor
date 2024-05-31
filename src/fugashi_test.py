@@ -2,8 +2,8 @@ import fugashi
 
 # This is our sample text.
 # "Fugashi" is a Japanese snack primarily made of gluten.
-#text = "空にある何かを見つめてたら12cars"
-text = '遥か 遠く 終わらない べテルギウス'
+text = "空にある何かを見つめてたら!12cars"
+#text = '遥か 遠く 終わらない べテルギウス'
 # The Tagger object holds state about the dictionary. 
 tagger = fugashi.Tagger()
 
