@@ -62,24 +62,52 @@ def has_japanese_characters(text):
     japanese_pattern = re.compile('[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]+')
     return bool(japanese_pattern.search(text))
 
-def remove_specific_parentheses_content(text):
-    text = re.sub(r'\(\(', '(', text)
-    text = re.sub(r'\)\)', ')', text)
+def remove_parentheses_content(s: str, predicate) -> str:
+    stack = []
+    content = ''
 
-    pattern = re.compile(r'\((.*?)\)')
-    matches = pattern.findall(text)
+    # Collect positions of parentheses
+    for i, char in enumerate(s):
+        content += char
+        if char == '(':
+            stack.append(len(content))
+        elif char == ')':
+            if stack:
+                start = stack.pop()
 
-    for match in matches:
-        clean_match = ''.join(match.split())
-        if len(clean_match) == 0 or len(clean_match) > 5 or has_japanese_characters(match) or not contains_korean(match):
-            text = text.replace(f'({match})', '')
-    return text.strip()
+def remove_parentheses_content(s: str, predicate) -> str:
+    stack = []
+    content = ''
+
+    # Collect positions of parentheses
+    for i, char in enumerate(s):
+        if char == '(':
+            content += char
+            stack.append(len(content)-1)
+        elif char == ')':
+            if stack:
+                start = stack.pop()
+                if predicate(content[start:]):
+                    content = content[:start]
+                else:
+                    content+=')'
+        else:
+            content += char
+    return content.strip()
+
 
 def slice_until(input_string, delimiter, N):
     parts = input_string.split(delimiter)
     if len(parts) < N:
         return input_string
-    result = delimiter.join(parts[:N]) + delimiter
+    
+    chuncks = []
+    for chunck in parts:
+        if contains_korean(chunck):
+            chuncks.append(chunck)
+        if len(chuncks) >= N:
+            break
+    result = delimiter.join(chuncks)
     
     return result
 
@@ -129,10 +157,15 @@ def search_definitions_and_pron_and_level(driver, query, N):
                             continue
                         if not contains_korean(cleared_string):
                             continue
-                        
-                        cleared_string = remove_specific_parentheses_content(cleared_string)
-                        cleared_string = slice_until(cleared_string, ';', 3)
-                        cleared_string = slice_until(cleared_string, ',', 3)
+                        print(cleared_string.strip())
+                        def pred(text):
+                            if len(text) == 0 or len(text) > 7 or has_japanese_characters(text) or not contains_korean(text):
+                                return True
+                            return False
+
+                        cleared_string = remove_parentheses_content(cleared_string.strip(), pred)
+                        cleared_string = slice_until(cleared_string, ';', 2)
+                        cleared_string = slice_until(cleared_string, ',', 2)
                         cleared_string = cleared_string.replace('\'','\\\'')
                         cleared_string = cleared_string.split(':')[-1].strip()
 
