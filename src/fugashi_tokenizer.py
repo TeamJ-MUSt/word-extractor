@@ -13,9 +13,9 @@ def get_tokens(text :str):
     words = [word for word in tagger(text)]
     tokens = []
     for word in words:
-        if word.feature.lemma is None:
+        if word.feature.lemma is None or word.feature.lemma == "":
             continue
-        if not is_japanese_only(word.surface):
+        if not is_japanese_only(word.surface) or not is_japanese_only(word.feature.lemma):
             continue
         info = {}
         info["surface"] = word.surface
@@ -23,6 +23,7 @@ def get_tokens(text :str):
         #info["pronounciation"] = word.feature.lForm   #pronounciation of lemma, (alternative)pron: pronounciation including ー. 
         info["lemma"] = word.feature.lemma #(alternative)orth: written lemma
         #goshu: word type
+
         if not any(__compare_tokens(info, existing_item) for existing_item in tokens):
             tokens.append(info)
     return tokens
