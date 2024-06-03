@@ -157,7 +157,6 @@ def search_definitions_and_pron_and_level(driver, query, N):
                             continue
                         if not contains_korean(cleared_string):
                             continue
-                        print(cleared_string.strip())
                         def pred(text):
                             if len(text) == 0 or len(text) > 7 or has_japanese_characters(text) or not contains_korean(text):
                                 return True
