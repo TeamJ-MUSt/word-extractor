@@ -26,10 +26,8 @@ def process_texts(texts):
         # Remove brackets
         cleaned_text = text.replace('[', '').replace(']', '')
         cleaned_text = cleaned_text.replace('(','').replace(')','').replace('-','')
-        # Split by '&'
+        cleaned_text = cleaned_text.replace('∙','·') # these two are different
         split_texts = cleaned_text.split('·')
-        # Trim spaces and collect both original cleaned text and splits
-        #result.append(cleaned_text)
         result.extend([item.strip() for item in split_texts])
     return result
 
@@ -111,10 +109,19 @@ def search_definitions_and_pron_and_level(driver, query, N):
     level = -1
     pron = ""
     driver.get(url)
+
+    # wait until loaded
+    try:
+        element = WebDriverWait(driver, 7).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "div.origin"))
+        )
+    except TimeoutException:
+        return definitions, pron, level
+
+    # scroll to bottom 
     try:
         last_height = driver.execute_script("return document.body.scrollHeight")
         
-        # scroll to bottom 
         count = 0
         while count <= 4:
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -163,6 +170,7 @@ def search_definitions_and_pron_and_level(driver, query, N):
                     cleared_string = cleared_string.split(':')[-1].strip()
                     cleared_string = cleared_string.split('：')[-1].strip()
 
+                    #print(cleared_string, (cleared_string not in definitions) and contains_korean(cleared_string))
                     if (cleared_string not in definitions) and contains_korean(cleared_string):
                         definitions.append(cleared_string)
 

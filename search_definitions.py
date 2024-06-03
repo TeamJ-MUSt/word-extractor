@@ -22,16 +22,18 @@ verbose = False
 
 
 def initialize_browser():
+    headless = True
     # Path to chromedriver executable
     service = Service('chromedriver-win64/chromedriver.exe')
-    service.creation_flags = CREATE_NO_WINDOW
     
     options = webdriver.ChromeOptions()
-    # Optional: options for headless mode (no GUI window)
-    options.add_argument('--headless')
-    options.add_argument('--disable-gpu')
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     options.add_argument("--log-level=3")
+
+    if headless:
+        service.creation_flags = CREATE_NO_WINDOW
+        options.add_argument('--headless')
+        options.add_argument('--disable-gpu')
 
     driver = webdriver.Chrome(service=service, options=options)
     return driver
