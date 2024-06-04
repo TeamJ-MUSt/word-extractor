@@ -1,3 +1,6 @@
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
+
 import argparse
 import json
 import os
@@ -20,11 +23,12 @@ from src.timer import Timer
 
 verbose = False
 
+CHROME_DRIVER_PATH = 'chromedriver-win64/chromedriver.exe'
 
 def initialize_browser():
     headless = True
     # Path to chromedriver executable
-    service = Service('chromedriver-win64/chromedriver.exe')
+    service = Service(CHROME_DRIVER_PATH)
     
     options = webdriver.ChromeOptions()
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
@@ -60,7 +64,7 @@ def get_word_definitions_job(words, index):
         result = searcher.search(driver, word, 4)
         if (result['definitions'] is None) or (len(result['definitions']) == 0):
             log("Not found from dictionary, therefore skipping it.")
-            continue
+            result['definitions'] = ['empty']
         else:
             log("Done!")
         results.append(result)
