@@ -49,6 +49,7 @@ optional arguments:
 - `--out OUT`: Output file path. Outputs to standard output if not specified.  
 - `--verbose`: Prints current queries and progress. Defaults to `False`
 - `--threads`: Number of threads for multi-threadings
+- `--headless`: Run chrome driver headless. This may affect the results in a bad way.
 
 ```
 // Using simple query, output to file, log process
@@ -57,6 +58,7 @@ python search_definitions.py "空 何 てる" --out result.txt --verbose
 // Using file query, output to standard output
 python search_definitions.py queries.txt
 
-// Using simple query, output to standard output, with 3 threads
-python search_definitions.py queries.txt --threads=3
+// Using simple query, output to standard output, with 3 threads, headless mode
+python search_definitions.py "空 何 てる" --threads=3 --headless
+
 ```

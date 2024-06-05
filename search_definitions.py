@@ -25,8 +25,8 @@ verbose = False
 
 CHROME_DRIVER_PATH = 'chromedriver-win64/chromedriver.exe'
 
-def initialize_browser():
-    headless = True
+def initialize_browser(headless):
+    
     # Path to chromedriver executable
     service = Service(CHROME_DRIVER_PATH)
     
@@ -54,34 +54,43 @@ def split_words(words, thread_count):
     return chuncks
 
 thread_results = []
-def get_word_definitions_job(words, index):
-    driver = initialize_browser()
+fails = []
+def get_word_definitions_job(words, index, headless):
+    driver = initialize_browser(headless)
 
     global thread_results
+    global fails
+    global verbose
     results = []
+    myfails = []
     for word in words:
         log(f"Querying {word}",end="")
-        result = searcher.search(driver, word, 4)
+        result = searcher.search(driver, word, 4, verbose)
         if (result['definitions'] is None) or (len(result['definitions']) == 0):
             log("Not found from dictionary, therefore skipping it.")
             result['definitions'] = ['empty']
+            myfails.append(word)
+            
         else:
             log("Done!")
         results.append(result)
 
     driver.quit()
     thread_results[index] = results
+    fails[index] = myfails
 
-def get_word_definitions(words, thread_count):
+def get_word_definitions(words, thread_count, headless):
     timer = Timer()
     timer.start('def')
     threads = []
     word_chucks = split_words(words, thread_count)
     global thread_results
+    global fails
     thread_results = [[] for i in range(thread_count)]
+    fails = [[] for i in range(thread_count)]
 
     for i in range(thread_count):
-        thread = Thread(target=get_word_definitions_job, args=(word_chucks[i], i))
+        thread = Thread(target=get_word_definitions_job, args=(word_chucks[i], i, headless))
         thread.start()
         threads.append(thread)
     for thread in threads:
@@ -106,6 +115,7 @@ def main():
     parser.add_argument('query', help='Words to search in lemma form with white spaces in between, or a file that contains the words. Whether it is a file or not is determined by the dot(.).')
     parser.add_argument('--threads', type=int, default=1, help='Number of threads for multi-threading')
     parser.add_argument('--out', help='Output file path. Outputs to standard output if not specified.')
+    parser.add_argument('--headless', action='store_true', help='Runs chrome driver headless')
     parser.add_argument('--verbose', action='store_true', help='Prints current queries and progress')
     args = parser.parse_args()
 
@@ -123,7 +133,10 @@ def main():
     else:
         text = args.query
     
-    dictionary = get_word_definitions(text.split(' '), args.threads)
+    dictionary = get_word_definitions(text.split(' '), args.threads, args.headless)
+
+    global fails
+    log(fails)
 
     if not args.out:
         print(dictionary)

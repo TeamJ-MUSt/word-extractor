@@ -105,7 +105,7 @@ def is_only_hiragana(s):
     # Use the regex to check if the string matches the pattern
     return bool(hiragana_regex.match(s))
 
-def search_definitions_and_pron_and_level(driver, query, N):
+def search_definitions_and_pron_and_level(driver, query, N, verbose):
     url = f'https://ja.dict.naver.com/#/search?range=word&query={query}'
     definitions = []
     level = -1
@@ -114,10 +114,12 @@ def search_definitions_and_pron_and_level(driver, query, N):
 
     # wait until loaded
     try:
-        element = WebDriverWait(driver, 7).until(
+        element = WebDriverWait(driver, 20).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "div.origin"))
         )
     except TimeoutException:
+        if verbose:
+            print(query,"Failed during WebDriverWait")
         return definitions, pron, level
 
     # scroll to bottom 
@@ -125,15 +127,16 @@ def search_definitions_and_pron_and_level(driver, query, N):
         last_height = driver.execute_script("return document.body.scrollHeight")
         
         count = 0
-        while count <= 4:
+        while count <= 10:
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(0.25)
+            time.sleep(0.15)
             new_height = driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
                 break
             last_height = new_height
             count += 1
-
+        invalid_entries = []
+        met_valid_entry = False
         # Attempt to find the container rows that include the origin and definitions
         rows = driver.find_elements(By.CSS_SELECTOR, "div.row")
         for row in rows:
@@ -143,7 +146,10 @@ def search_definitions_and_pron_and_level(driver, query, N):
             # Extract text and check if it matches the query
             texts = process_texts([origin_text.text for origin_text in origin_texts])
             valid = any(text == query for text in texts)
+            if not valid:
+                invalid_entries.append(texts)
             if valid:
+                met_valid_entry = True
                 if level < 0:
                     level = find_jlpt(texts)
                 if pron == "":
@@ -178,15 +184,18 @@ def search_definitions_and_pron_and_level(driver, query, N):
 
                     if len(definitions) >= N:
                         break
-                
+        if verbose and not met_valid_entry:
+            print(query+" was not valid:",invalid_entries)
+
     except TimeoutException:
-        print("Timed out waiting for page to load")
+        if verbose:
+            print("Timed out waiting for page to load")
 
     if pron == "":
         pron = query
     return definitions, pron, level
 
 
-def search(driver, word, N):
-    definitions, pron, level = search_definitions_and_pron_and_level(driver, word, N)
+def search(driver, word, N, verbose):
+    definitions, pron, level = search_definitions_and_pron_and_level(driver, word, N, verbose)
     return {'word': word, 'definitions': definitions, 'pronounciation':pron, 'level':level}
