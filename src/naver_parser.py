@@ -15,6 +15,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
+from src.timer import Timer
 
 def remove_span_mark_content(html):
     soup = BeautifulSoup(html, 'html.parser')
@@ -112,6 +113,8 @@ def search_definitions_and_pron_and_level(driver, query, N, verbose):
     pron = ""
     driver.get(url)
 
+    timer = Timer()
+    timer.start(query+'driverwait')
     # wait until loaded
     try:
         element = WebDriverWait(driver, 20).until(
@@ -121,23 +124,27 @@ def search_definitions_and_pron_and_level(driver, query, N, verbose):
         if verbose:
             print(query,"Failed during WebDriverWait")
         return definitions, pron, level
-
+    timer.stop(verbose)
     # scroll to bottom 
     try:
+        timer.start(query+'scroll')
         last_height = driver.execute_script("return document.body.scrollHeight")
         
         count = 0
         while count <= 10:
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(0.15)
+            time.sleep(0.1)
             new_height = driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
                 break
             last_height = new_height
             count += 1
+        timer.stop(verbose)
         invalid_entries = []
         met_valid_entry = False
+        search_done = False
         # Attempt to find the container rows that include the origin and definitions
+        timer.start(query+'crawltime')
         rows = driver.find_elements(By.CSS_SELECTOR, "div.row")
         for row in rows:
             origin_div = row.find_element(By.CSS_SELECTOR, "div.origin")
@@ -183,10 +190,13 @@ def search_definitions_and_pron_and_level(driver, query, N, verbose):
                         definitions.append(cleared_string)
 
                     if len(definitions) >= N:
+                        search_done = True
                         break
+                if search_done:
+                    break
         if verbose and not met_valid_entry:
             print(query+" was not valid:",invalid_entries)
-
+        timer.stop(verbose)
     except TimeoutException:
         if verbose:
             print("Timed out waiting for page to load")
